@@ -50,7 +50,7 @@ public class DefaultController implements TrafficShapingController {
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         //获取当前流量大小(QPS或线程数)
         int curCount = avgUsedTokens(node);
-        //如果超出
+        //如果超出限流值
         if (curCount + acquireCount > count) {
             //是qps限流
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
