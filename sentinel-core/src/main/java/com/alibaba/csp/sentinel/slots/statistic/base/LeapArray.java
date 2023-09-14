@@ -52,6 +52,8 @@ public abstract class LeapArray<T> {
     private final ReentrantLock updateLock = new ReentrantLock();
 
     /**
+     * 对于分钟维度的设置，sampleCount 为 60，intervalInMs 为 60 * 1000
+     *
      * The total bucket count is: {@code sampleCount = intervalInMs / windowLengthInMs}.
      *
      * @param sampleCount  bucket count of the sliding window
@@ -62,6 +64,7 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
+        //分钟级别: windowLengthInMs = 1000; intervalInMs = 60 * 1000. sampleCount = 60.
         this.windowLengthInMs = intervalInMs / sampleCount;
         this.intervalInMs = intervalInMs;
         this.sampleCount = sampleCount;
@@ -102,6 +105,7 @@ public abstract class LeapArray<T> {
     }
 
     protected long calculateWindowStart(/*@Valid*/ long timeMillis) {
+        //当前时间 - 当前时间 % 1000.
         return timeMillis - timeMillis % windowLengthInMs;
     }
 
@@ -116,7 +120,9 @@ public abstract class LeapArray<T> {
             return null;
         }
 
+        // 获取窗口下标. 也就是处于60秒的第几秒
         int idx = calculateTimeIdx(timeMillis);
+        // 计算该窗口的理论开始时间. 也就是前一秒
         // Calculate current bucket start time.
         long windowStart = calculateWindowStart(timeMillis);
 

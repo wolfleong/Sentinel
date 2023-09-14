@@ -37,6 +37,11 @@ public class ArrayMetric implements Metric {
 
     private final LeapArray<MetricBucket> data;
 
+    /**
+     * 秒级统计
+     * @param sampleCount 2
+     * @param intervalInMs 1000
+     */
     public ArrayMetric(int sampleCount, int intervalInMs) {
         this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
     }

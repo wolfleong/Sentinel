@@ -23,6 +23,7 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
 import com.alibaba.csp.sentinel.util.TimeUtil;
 
 /**
+ * 快速失败
  * Default throttling controller (immediately reject strategy).
  *
  * @author jialiang.linjl
@@ -47,8 +48,11 @@ public class DefaultController implements TrafficShapingController {
 
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        //获取当前流量大小(QPS或线程数)
         int curCount = avgUsedTokens(node);
+        //如果超出
         if (curCount + acquireCount > count) {
+            //是qps限流
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
                 long currentTime;
                 long waitInMs;
@@ -65,6 +69,7 @@ public class DefaultController implements TrafficShapingController {
             }
             return false;
         }
+        //没超出
         return true;
     }
 

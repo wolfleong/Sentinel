@@ -59,6 +59,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  * occupied token.
  * </p>
  *
+ * 预热控制
+ *
  * @author jialiang.linjl
  */
 public class WarmUpController implements TrafficShapingController {
