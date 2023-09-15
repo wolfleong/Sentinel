@@ -51,6 +51,7 @@ public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             return;
         }
         for (CircuitBreaker cb : circuitBreakers) {
+            //尝试通过
             if (!cb.tryPass(context)) {
                 throw new DegradeException(cb.getRule().getLimitApp(), cb.getRule());
             }

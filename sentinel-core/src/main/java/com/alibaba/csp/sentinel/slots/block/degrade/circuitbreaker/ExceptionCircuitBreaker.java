@@ -78,20 +78,25 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     private void handleStateChangeWhenThresholdExceeded(Throwable error) {
+        //如果是打开, 则不用处理
         if (currentState.get() == State.OPEN) {
             return;
         }
-        
+
+        //处理半打开
         if (currentState.get() == State.HALF_OPEN) {
             // In detecting request
+            //没有异常, 回退到关闭
             if (error == null) {
                 fromHalfOpenToClose();
             } else {
+                //还有异常, 则重新打开
                 fromHalfOpenToOpen(1.0d);
             }
             return;
         }
-        
+
+        //处理关闭状态
         List<SimpleErrorCounter> counters = stat.values();
         long errCount = 0;
         long totalCount = 0;
@@ -108,6 +113,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             curCount = errCount * 1.0d / totalCount;
         }
         if (curCount > threshold) {
+            //变成打开
             transformToOpen(curCount);
         }
     }
