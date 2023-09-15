@@ -66,21 +66,25 @@ public class DegradeRule extends AbstractRule {
     }
 
     /**
+     * 阈值
      * RT threshold or exception ratio threshold count.
      */
     private double count;
 
     /**
-     * Degrade recover timeout (in seconds) when degradation occurs.
+     * 熔断时长
+     * degrade recover timeout (in seconds) when degradation occurs.
      */
     private int timeWindow;
 
     /**
+     * 熔断策略
      * Degrade strategy (0: average RT, 1: exception ratio, 2: exception count).
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
+     * 慢调用比例阈值，仅慢调用比例模式有效
      * Minimum number of consecutive slow requests that can trigger RT circuit breaking.
      *
      * @since 1.7.0
@@ -88,6 +92,7 @@ public class DegradeRule extends AbstractRule {
     private int rtSlowRequestAmount = RuleConstant.DEGRADE_DEFAULT_SLOW_REQUEST_AMOUNT;
 
     /**
+     * 熔断触发的最小请求数
      * Minimum number of requests (in an active statistic time span) that can trigger circuit breaking.
      *
      * @since 1.7.0
@@ -179,26 +184,34 @@ public class DegradeRule extends AbstractRule {
     // Internal implementation (will be deprecated and moved outside).
 
     private AtomicLong passCount = new AtomicLong(0);
+    /**
+     * 是否熔断
+     */
     private final AtomicBoolean cut = new AtomicBoolean(false);
 
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
+        //如果打开熔断, 则直接降级
         if (cut.get()) {
             return false;
         }
 
+        //获取聚合节点
         ClusterNode clusterNode = ClusterBuilderSlot.getClusterNode(this.getResource());
         if (clusterNode == null) {
             return true;
         }
 
+        //基于平均RT
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
             double rt = clusterNode.avgRt();
+            //小于RT阈值, 直接通过
             if (rt < this.count) {
                 passCount.set(0);
                 return true;
             }
 
+            //大于RT阈值, 但是请求数没到慢调个数阈值, 也通过
             // Sentinel will degrade the service only if count exceeds.
             if (passCount.incrementAndGet() < rtSlowRequestAmount) {
                 return true;
@@ -229,7 +242,9 @@ public class DegradeRule extends AbstractRule {
             }
         }
 
+        //开启限流
         if (cut.compareAndSet(false, true)) {
+            //设置定时任务
             ResetTask resetTask = new ResetTask(this);
             pool.schedule(resetTask, timeWindow, TimeUnit.SECONDS);
         }
@@ -247,6 +262,7 @@ public class DegradeRule extends AbstractRule {
 
         @Override
         public void run() {
+            //重置熔断策略
             rule.passCount.set(0);
             rule.cut.set(false);
         }

@@ -72,11 +72,13 @@ public final class DegradeRuleManager {
     public static void checkDegrade(ResourceWrapper resource, Context context, DefaultNode node, int count)
         throws BlockException {
 
+        //获取降级策略
         Set<DegradeRule> rules = degradeRules.get(resource.getName());
         if (rules == null) {
             return;
         }
 
+        //遍历降级策略, 判断是否降级
         for (DegradeRule rule : rules) {
             if (!rule.passCheck(context, node, count)) {
                 throw new DegradeException(rule.getLimitApp(), rule);
