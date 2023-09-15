@@ -28,6 +28,10 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
  */
 public class BucketLeapArray extends LeapArray<MetricBucket> {
 
+    /**
+     * @param sampleCount 采样个数
+     * @param intervalInMs 采样时间范围
+     */
     public BucketLeapArray(int sampleCount, int intervalInMs) {
         super(sampleCount, intervalInMs);
     }

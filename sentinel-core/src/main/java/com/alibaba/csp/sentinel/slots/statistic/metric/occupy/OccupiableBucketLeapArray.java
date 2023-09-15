@@ -23,13 +23,22 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 
 /**
+ * 实现的思想是当前抽样统计中的“令牌”已耗尽，即达到用户设定的相关指标的阔值后，可以向下一个时间窗口，即借用未来一个采样区间
  * @author jialiang.linjl
  * @since 1.5.0
  */
 public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
 
+    /**
+     * borrow 借用的意思
+     * FutureBucketLeapArray 表示未来的窗口采样
+     */
     private final FutureBucketLeapArray borrowArray;
 
+    /**
+     * @param sampleCount 采样次数
+     * @param intervalInMs 采样时间范围
+     */
     public OccupiableBucketLeapArray(int sampleCount, int intervalInMs) {
         // This class is the original "CombinedBucketArray".
         super(sampleCount, intervalInMs);
@@ -38,8 +47,10 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
 
     @Override
     public MetricBucket newEmptyBucket(long time) {
+        //创建新的Bucket
         MetricBucket newBucket = new MetricBucket();
 
+        //看是否借用过bucket, 有的话, 使用借用的bucket初始化 newBucket
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         if (borrowBucket != null) {
             newBucket.reset(borrowBucket);
@@ -52,6 +63,7 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
     protected WindowWrap<MetricBucket> resetWindowTo(WindowWrap<MetricBucket> w, long time) {
         // Update the start time and reset value.
         w.resetTo(time);
+        //如果存在已借用的情况，在重置后需要加上在未来已使用过的许可
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         if (borrowBucket != null) {
             w.value().reset();
@@ -77,6 +89,7 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
 
     @Override
     public void addWaiting(long time, int acquireCount) {
+        //当前令牌用完了, 那么需要借用未来的窗口进行存储
         WindowWrap<MetricBucket> window = borrowArray.currentWindow(time);
         window.value().add(MetricEvent.PASS, acquireCount);
     }
