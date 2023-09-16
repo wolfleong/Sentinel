@@ -43,6 +43,10 @@ public final class RuleConstant {
     public static final int AUTHORITY_BLACK = 1;
 
     public static final int STRATEGY_DIRECT = 0;
+    /**
+     * 关联资源限流, 如:
+     *  查询订单接口和下单接口. 下单接口qps高, 那么就给查询订单接口限流, 可以给下单接口更多的资源
+     */
     public static final int STRATEGY_RELATE = 1;
     public static final int STRATEGY_CHAIN = 2;
 
