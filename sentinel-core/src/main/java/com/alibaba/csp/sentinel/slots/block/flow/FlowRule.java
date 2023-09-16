@@ -57,6 +57,7 @@ public class FlowRule extends AbstractRule {
     private double count;
 
     /**
+     * 基于调用关系的限流策略.
      * Flow control strategy based on invocation chain.
      *
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);

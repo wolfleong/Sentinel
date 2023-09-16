@@ -43,7 +43,13 @@ public final class RuleConstant {
     public static final int AUTHORITY_BLACK = 1;
 
     public static final int STRATEGY_DIRECT = 0;
+    /**
+     * 使用 ClusterNode 节点的数据进行限流
+     */
     public static final int STRATEGY_RELATE = 1;
+    /**
+     * 使用DefaultNode节点的统计数据进行限流
+     */
     public static final int STRATEGY_CHAIN = 2;
 
     public static final int CONTROL_BEHAVIOR_DEFAULT = 0;
